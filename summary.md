@@ -1161,7 +1161,7 @@ methods.
 ```java
 public class ConditionSync {
   private Lock mutex = new ReentrantLock();
-  private Condition change = mutex.newCondition(); // one condition per lock
+  private Condition change = mutex.newCondition();
   private boolean condition = false;
   
   public void waitForCondition() throws InterruptedException {
