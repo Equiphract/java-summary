@@ -2357,9 +2357,13 @@ mockedList.add("one"); // Add an element “one” to the list
 mockedList.clear();    // Call the clear() method on the list
 
 // verification
-verify(mockedList).add("one"); // Verify that the method add() was called with the parameter "one"
+verify(mockedList).add("one"); // Verify that the method add() was called with
+                               // the parameter "one"
+
 verify(mockedList).clear();    // Verify that the method clear() was called
-verify(mockedList).add("two"); // Verify that the method add() was called with the parameter "two"
+
+verify(mockedList).add("two"); // Verify that the method add() was called with
+                               // the parameter "two"
                                // Error because add() was not called with the parameter "two"
 
 // Verify that the add() was never called with "ZHAW"
@@ -2375,14 +2379,118 @@ List singleMock = mock(List.class);
 singleMock.add("first"); // First interaction with the mock object
 singleMock.add("second"); // Second interaction with the mock object
 
-// Wrap the mock object to an InOrder verifier to test if the mock is called in the right order
+// Wrap the mock object to an InOrder verifier to test if the mock is called in
+// the right order
 InOrder inOrder = inOrder(singleMock);
 
 // Verify the order
-inOrder.verify(singleMock).add("second"); // Verify that add was called with "second" -> Error
-inOrder.verify(singleMock).add("first");  // Verify that add was called with "first"  -> Error
+inOrder.verify(singleMock).add("second"); // Verify that add was called with
+                                          // "second" -> Error
+
+inOrder.verify(singleMock).add("first");  // Verify that add was called with
+                                          // "first"  -> Error
 ```
 
+#### Stubbing
+```java
+// Two different patterns:
+// when(mock.stubbedMethod(values)).thenReturn(Object);
+// doReturn(Object).when(mock).stubbedMethod(values);
+
+// Create the mock for a person object which has the method getLongName()
+Person mock = mock(Person.class)
+
+// Tell the mock object to return "Hans Muster" when getLongName() is called
+when(mock.getLongName()).thenReturn("Hans Muster");
+
+// Assert
+assertEquals("Hans Muster", mock.getLongName());
+assertEquals("Hans", mock.getFirstName()); // will fail, getFirstName() is not
+                                           // stubbed
+```
+```java
+// Stubbing an exception throw
+Person mock = mock(Person.class); // create mock
+
+when(mock.getLongName()).thenThrow(new Exception()); // stubbing
+
+assertThrows(Exception.class, new Executable() {
+  public void execute() throws Throwable {
+    mock.getLongName();
+  }
+});
+
+assertThrows(Exception.class, () -> mock.getLongName());
+```
+```java
+List mockedList = mock(List.class);
+
+//stubbing using anyInt() argument matcher
+// return defaultValue for any argument
+when(mockedList.get(anyInt())).thenReturn("defaultValue");
+
+// return value for a specific argument
+when(mockesList.get(0)).thenReturn("firstValue");
+
+// Returns value based on input values.
+assertEquals(mockedList.get(0), "firstValue");
+assertEquals(mockedList.get(1), "defaultValue");
+assertEquals(mockedList.get(99), "defaultValue");
+
+/*
+Any-matchers:
+anyInt(), anyString(), anyCollection(), any(Class xx),...
+
+String-matchers: startsWith(), endsWith(), contains(), matches(),...
+
+Object-matchers: isNull(), IsNotNull(), isA(),...
+
+Compare-matchers: eq(), same(),...
+
+Custom-matchers: argThat(), intThat(), floatThat(),...
+*/
+```
+
+#### Spy (Partial Mock)
+```java
+List list = new LinkedList();
+// create a spy on the real object instance
+List spy = spy(list);
+
+// stub the size() method
+when(spy.size()).thenReturn(100);
+
+// add() is not stubbed. So it will use the real method
+spy.add("one"); spy.add("two");
+
+assertEquals("one", spy.get(0));
+assertEquals(100, spy.size());
+```
+
+#### Annotations `@Mock` & `@Spy`
+```java
+public class MockAnnotations {
+  // Create a Mock with an annotation
+  @Mock Person mock;
+
+  // Create a Spy with an annotation instead of
+  // LinkedList spy = spy(new LinkedList())
+  @Spy LinkedList spy;
+
+  @Before
+  public void setUp() throws Exception {
+    // initialize the annotations in the class
+    MockitoAnnotations.initMocks(this);
+    when(mock.getLongName()).thenReturn("HansPeter");
+  }
+
+  @Test
+  public void testMethod() {
+    spy.add("Hello ZHAW");
+    mock.getLongName();
+  }
+}
+```
 [1]: https://docs.oracle.com/javase/8/javafx/user-interface-tutorial/
 "Oracle: Interface Tutorial"
 [2]: https://docs.oracle.com/javase/8/javafx/events-tutorial/index.html
