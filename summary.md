@@ -2491,6 +2491,292 @@ public class MockAnnotations {
   }
 }
 ```
+
+### Input-Output
+```java
+// Creating Path object
+Path.of("/Users/demo/prog2");
+Path.of("/","Users","demo","prog2")
+
+// Accessing Metadata (Files class):
+isDirectory(path), isReadable(path), isWritable(path), isHidden(path),
+isExecutable(path), isSymbolicLink(path), getAttribute(path, attribute),...
+
+// Access Directory Content (Files class):
+list(path), newDirectoryStream(path), walkFileTree(path), ...
+
+// Create/Delete (Files class):
+createFile(path),createDirectory(path), createDirectories(path),
+createLink(link, existing), exists(path), delete(path), deleteIfExists(path),
+
+// Move / Copy Files (Files class):
+copy(source, target), move(source, target)
+
+Read / Write File content (Files class):
+newBufferedWriter(path, charset), readAllLines(path, charset)
+
+```
+```java
+// Example reading file attributes of directory content
+class FilesDemo {
+  public static void main(String[] args) throws IOException {
+    String pathName = (args.length == 1)? args[0] : "./demo";
+
+    Path path = Path.of(pathName);
+    System.out.println("File Name: " + path);
+    if (Files.isDirectory(path)) {
+      // print directory content
+      for (Path filePath : Files.newDirectoryStream(path)) {
+        printAttributes(filePath);
+      }
+    } else {
+      printAttributes(path);
+    }
+  }
+
+
+  static void printAttributes(Path path) throws IOException {
+    System.out.printf(" - %-10s %c%c%c%c%c modified %tF %<tT size %d bytes%n",
+                      path.getFileName(),
+                      Files.isDirectory(path) ? 'd':'-',
+                      Files.isReadable(path) ? 'r':'-',
+                      Files.isWritable(path) ? 'w':'-',
+                      Files.isExecutable(path) ? 'x':'-',
+                      Files.isHidden(path) ? 'h':'-',
+                      Files.getLastModifiedTime(path).toInstant()
+                          .atZone(ZoneId.systemDefault())
+                          .toLocalDateTime(),
+                      Files.size(path)
+    );
+  }
+}
+```
+```
++===============+=======================+=================================+
+| Type          | Stream Class          | Meaning                         |
++---------------+-----------------------+---------------------------------+
+| Abstract base | InputStream           | Abstract class that describes   |
+|               |                       | stream input                    |
++---------------+-----------------------+---------------------------------+
+| Abstract base | OutputStream          | Abstract class that describes   |
+|               |                       | stream output                   |
++---------------+-----------------------+---------------------------------+
+| Source        | ByteArrayInputStream  | Input stream that reads from    |
+|               |                       | a byte array                    |
++---------------+-----------------------+---------------------------------+
+| Destination   | ByteArrayOutputStream | Output stream that writes to    |
+|               |                       | a byte array                    |
++---------------+-----------------------+---------------------------------+
+| Source        | FileInputStream       | Input stream that reads from    |
+|               |                       | a file                          |
++---------------+-----------------------+---------------------------------+
+| Destination   | FileOutputStream      | Output stream that writes to    |
+|               |                       | a file                          |
++---------------+-----------------------+---------------------------------+
+| Source        | PipedInputStream      | Input pipe                      |
++---------------+-----------------------+---------------------------------+
+| Destination   | PipedOutputStream     | Output pipe                     |
++---------------+-----------------------+---------------------------------+
+| Source        | CharArrayReader       | Input stream that reads from a  |
+|               |                       | character array                 |
++---------------+-----------------------+---------------------------------+
+| Destination   | CharArrayWriter       | Output stream that writes to a  |
+|               |                       | character array                 |
++---------------+-----------------------+---------------------------------+
+| Source        | FileReader            | Input stream that reads from a  |
+|               |                       | file                            |
++---------------+-----------------------+---------------------------------+
+| Destination   | FileWriter            | Output stream that writes to a  |
+|               |                       | file                            |
++---------------+-----------------------+---------------------------------+
+| Decorator     | FilterInputStream     | Implements InputStream          |
++---------------+-----------------------+---------------------------------+
+| Decorator     | FilterOutputStream    | Implements OutputStream         |
++---------------+-----------------------+---------------------------------+
+| Decorator     | BufferedInputStream   | Buffered input stream           |
++---------------+-----------------------+---------------------------------+
+| Decorator     | BufferedOutputStream  | Buffered output stream          |
++---------------+-----------------------+---------------------------------+
+| Decorator     | DataInputStream       | An input stream that contains   |
+|               |                       | methods for reading the Java    |
+|               |                       | standard data types             |
++---------------+-----------------------+---------------------------------+
+| Decorator     | DataOutputStream      | An output stream that           |
+|               |                       | contains methods for writing    |
+|               |                       | the Java standard data types    |
++---------------+-----------------------+---------------------------------+
+| Decorator     | ObjectInputStream     | Input stream for objects        |
++---------------+-----------------------+---------------------------------+
+| Decorator     | ObjectOutputStream    | Output stream for objects       |
++---------------+-----------------------+---------------------------------+
+| Decorator     | PrintStream           | Output stream that contains     |
+|               |                       | print() and println()           |
++---------------+-----------------------+---------------------------------+
+| Decorator     | PushbackInputStream   | Input stream that supports      |
+|               |                       | one-byte "unget", which         |
+|               |                       | returns a byte to the input     |
+|               |                       | stream                          |
++---------------+-----------------------+---------------------------------+
+| Decorator     | RandomAccessFile      | Supports random access          |
+|               |                       | file I/O                        |
++---------------+-----------------------+---------------------------------+
+| Decorator     | SequenceInputStream   | Input stream that is a          |
+|               |                       | combination of two or           |
+|               |                       | more input streams that will be |
+|               |                       | read sequentially, one after    |
+|               |                       | the other                       |
++---------------+-----------------------+---------------------------------+
+| Decorator     | BufferedReader        | Buffered input character stream |
++---------------+-----------------------+---------------------------------+
+| Decorator     | BufferedWriter        | Buffered output character       |
+|               |                       | stream                          |
++---------------+-----------------------+---------------------------------+
+| Decorator     | FilterReader          | Filtered reader                 |
++---------------+-----------------------+---------------------------------+
+| Decorator     | FilterWriter          | Filtered writer                 |
++===============+=======================+=================================+
+```
+```java
+// Example reading/writing FileInputStream
+public class FileStreamReadWrite {
+  public static void main(String[] args) {
+    String sourcePathName = (args.length >= 1) ? args[0] : "./Demo.txt";
+    String targetPathName = (args.length >= 2) ? args[1] : "./DemoCopy.txt";
+    try (FileInputStream fin = new FileInputStream(sourcePathName);
+         FileOutputStream fout = new FileOutputStream(targetPathName)) {
+
+      // Copy (READ, WRITE) File *byte by byte*
+      int byteValue; // variable to hold a value
+      do {
+        byteValue = fin.read();  // read next byte from fin
+        if(byteValue != -1) {    // if not reached end of file
+          fout.write(byteValue); // write byte value to fout
+        }
+      } while(byteValue != -1);  // reached end of file ?
+    } // fin & fout will be automatically closed here ( -> try-with-resource)
+    catch(FileNotFoundException e) {
+      System.out.println("File not found: " + e.getMessage());
+    } catch(IOException e) {
+      System.out.println("IO Error: " + e.getMessage());
+    }
+  }
+}
+```
+BufferedI/OStream: buffers data for optimal reading/writing to slow devices
+DataI/OStream: adds functions to read/write basic/native data types
+ObjectI/OStream: serialize Objects to stream, deserialize from stream
+FilterI/OStream: forwards calls to wrapped stream, override methods to modify
+data
+
+```java
+// Example buffered reading/writing
+public class FileStreamReadWriteBuffered {
+  public static void main(String[] args) {
+    String sourcePathName = (args.length >= 1) ? args[0] : "./Demo.txt";
+    String targetPathName = (args.length >= 2) ? args[1] : "./DemoCopy.txt";
+
+    try (BufferedInputStream in
+             = new BufferedInputStream(new FileInputStream(sourcePathName));
+         BufferedOutputStream out
+             = new BufferedOutputStream(new FileOutputStream(targetPathName))) {
+
+    int totalBytesCopied = 0;
+    int bytesRead;
+    byte[] byteBuffer = new byte[32];
+
+    while ((bytesRead = in.read(byteBuffer)) != -1) {
+      out.write(byteBuffer, 0, bytesRead);
+      totalBytesCopied += bytesRead;
+    }
+
+    System.out.println("Copied bytes: " + totalBytesCopied);
+    } catch(FileNotFoundException e) {
+      System.out.println("File not found: " + e.getMessage());
+    } catch(IOException e) {
+      System.out.println("IO Error: " + e.getMessage());
+    }
+  }
+}
+
+```
+```java
+// Reading textfiles
+public class FileReaderDemo {
+  public static void main(String args[]) {
+    String sourcePathName = (args.length >= 1) ? args[0] : "./Demo.txt";
+
+    try (FileReader reader
+             = new FileReader(sourcePathName, Charset.defaultCharset())) {
+
+      // read character-by-character
+      int charValue; // variable to hold a value
+      do {
+        charValue = reader.read(); // read next byte from file
+        if(charValue !=-1) { // if not end of file
+          System.out.print((char)charValue); // write char value to console
+        }
+      } while(charValue != -1); // reached end of file ?
+
+    } catch(FileNotFoundException e) {
+      System.out.println("File not found: " + e.getMessage());
+    } catch(IOException e) {
+      System.out.println("IO Error: " + e.getMessage());
+    }
+  }
+}
+```
+```java
+// Converting Charactersets
+public class FileCharsetConvert {
+  public static void main(String[] args) {
+    String sourcePathName = (args.length >= 1) ? args[0] : "./Demo.txt";
+    String targetPathName
+        = (args.length >= 1) ? args[0] : "./Demo-iso-8859-1.txt";
+
+    try (FileReader reader
+             = new FileReader(sourcePathName, Charset.forName("UTF-8"));
+         FileWriter writer
+             = new FileWriter(targetPathName, StandardCharsets.ISO_8859_1)) {
+
+    // read character-by-character
+    int charValue; // variable to hold a value
+    do {
+      charValue = reader.read(); // read next char from file
+      if(charValue !=-1) { // if not end of file
+        writer.write(charValue); // write char value to console
+      }
+    } while(charValue != -1); // reached end of file ?
+
+    } catch(FileNotFoundException e) {
+      System.out.println("File not found: " + e.getMessage());
+    } catch(IOException e) {
+      System.out.println("IO Error: " + e.getMessage());
+    }
+  }
+} 
+```
+```java
+public class BufferedReaderWriter {
+  public static void main(String[] args) throws IOException {
+    try (BufferedReader br
+             = new BufferedReader(new InputStreamReader(System.in));
+         BufferedWriter bw
+             = new BufferedWriter(new OutputStreamWriter(System.out))) {
+
+      System.out.println("Enter lines of text.");
+      System.out.println("Enter 'stop' to quit.");
+      String line;
+
+      do {
+        line = br.readLine();
+        bw.write(line);
+        bw.newLine();
+      } while(!line.equals("stop"));
+
+    }
+  }
+}
+```
 [1]: https://docs.oracle.com/javase/8/javafx/user-interface-tutorial/
 "Oracle: Interface Tutorial"
 [2]: https://docs.oracle.com/javase/8/javafx/events-tutorial/index.html
