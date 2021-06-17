@@ -2323,6 +2323,66 @@ timeline.getKeyFrames().add(keyFrame); // add the keyframe to the timeline
 timeline.play(); // start the animation
 ```
 
+## SEP Copy Paste
+### Mock Testing
+```java
+import static org.mockito.Mockito.*;
+
+JukeBox jukeBox;
+
+@Before void setup {
+  jukeBox = new MusicJukeBox();
+}
+
+@Test void testActualSong() {
+  Song mock = mock(Song.class);
+  when(mock.getTitle()).thenReturn("Frozen");
+  when(mock.isPlaying()).thenReturn(Boolean.TRUE); // run the actual
+
+  testsjukeBox.addSong(mock);
+  jukeBox.playTitle("Frozen");
+  assertEquals("Frozen", jukeBox.getActualSong().getTitle());
+
+  verify(mock).start();
+  verify(mock, times(2)).getTitle();
+}
+```
+#### Interaction Verification
+```java
+// Create a mock object for the java.util.List classList mocked
+List = mock(List.class);
+
+// Work with the mock object
+mockedList.add("one"); // Add an element “one” to the list
+mockedList.clear();    // Call the clear() method on the list
+
+// verification
+verify(mockedList).add("one"); // Verify that the method add() was called with the parameter "one"
+verify(mockedList).clear();    // Verify that the method clear() was called
+verify(mockedList).add("two"); // Verify that the method add() was called with the parameter "two"
+                               // Error because add() was not called with the parameter "two"
+
+// Verify that the add() was never called with "ZHAW"
+verify(mockedList, never()).add("ZHAW");
+// Also possible: `atLeastOnce()`, `atLeast(int)`, `atMost(int)`
+```
+
+#### Order verification
+```java
+List singleMock = mock(List.class);
+
+// using a single mock
+singleMock.add("first"); // First interaction with the mock object
+singleMock.add("second"); // Second interaction with the mock object
+
+// Wrap the mock object to an InOrder verifier to test if the mock is called in the right order
+InOrder inOrder = inOrder(singleMock);
+
+// Verify the order
+inOrder.verify(singleMock).add("second"); // Verify that add was called with "second" -> Error
+inOrder.verify(singleMock).add("first");  // Verify that add was called with "first"  -> Error
+```
+
 [1]: https://docs.oracle.com/javase/8/javafx/user-interface-tutorial/
 "Oracle: Interface Tutorial"
 [2]: https://docs.oracle.com/javase/8/javafx/events-tutorial/index.html
