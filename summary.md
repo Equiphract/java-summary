@@ -1014,7 +1014,7 @@ public class SyncMonitor {
   
   // called by consumer
   public synchronized void waitForCondition() {
-    while if(!condition) { // verify condition
+    while (!condition) { // verify condition
       try {
         wait();
       } catch (InterruptedException e) {
